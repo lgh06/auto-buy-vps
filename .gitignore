@@ -1,0 +1,10 @@
+node_modules/
+build/
+*.log
+*.js.map
+*.css.map
+src/js/config.json
+others/
+lib/
+src/css/*.css
+www.js
