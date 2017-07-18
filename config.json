@@ -1,7 +1,0 @@
-{
-  "digitalocean":{
-    "username":"",
-    "password":"",
-    "twofactor":true
-  }
-}
