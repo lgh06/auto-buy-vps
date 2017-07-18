@@ -1,46 +1,34 @@
-const chromeLauncher = require('chrome-launcher');
+require('chromedriver');
+var config = require('./config.json').digitalocean;
+var webdriver = require('selenium-webdriver'),
+  By = webdriver.By,
+  until = webdriver.until;
 
-let fun = chrome => {
-  console.log(`Chrome debuggable on port: ${chrome.port}`);
-  let CDP = require('chrome-remote-interface');
+var driver = new webdriver.Builder()
+  .forBrowser('chrome')
+  .build();
 
+driver.get('https://cloud.digitalocean.com/login');
+driver.findElement(By.id('user_email')).sendKeys(config.username);
+driver.findElement(By.id('user_password')).sendKeys(config.password);
+driver.findElement(By.name('commit')).click();
 
-  CDP((client) => {
-    // extract domains
-    const {Network, Page} = client;
-    // setup handlers
-    Network.requestWillBeSent((params) => {
-      console.log(params.request.url);
+if(config.twofactor){
+  driver.wait(until.elementLocated(By.id('otp')));
+
+  driver.wait(function (){
+    let v = driver.findElement(By.id('otp')).getAttribute("value");
+    return v.then((v)=>{
+      if(v && v.match(/[0-9a-zA-Z]{6,}/)){
+        return Promise.resolve(true);
+      }
     });
-    Page.loadEventFired(() => {
-      client.close();
-    });
-    // enable events then start!
-    Promise.all([
-      Network.enable(),
-      Page.enable()
-    ]).then(() => {
-      return Page.navigate({url: 'https://github.com'});
-    }).catch((err) => {
-      console.error(err);
-      client.close();
-    });
-  }).on('error', (err) => {
-    // cannot connect to the remote endpoint
-    console.error(err);
   });
 
-  // chrome.kill();
+  driver.sleep(3000); // two factor authentication
+  var twoFactorBtn = driver.findElement(By.name('commit'));
+  twoFactorBtn.click();
 }
 
-chromeLauncher.launch({
-  startingUrl: 'https://www.baidu.com',
-  chromeFlags: [
-    '--headless',
-    '--disable-gpu',
-    '--remote-debugging-port=9222',
-    '--disable-web-security',
-    '--allow-file-access-from-files',
-    //'--user-data-dir="/tmp/chrome_dev_session"'
-  ]
-}).then(fun, fun);
+
+driver.quit();

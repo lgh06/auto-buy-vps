@@ -8,3 +8,5 @@ others/
 lib/
 src/css/*.css
 www.js
+package-lock.json
+config.json
