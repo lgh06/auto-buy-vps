@@ -8,6 +8,8 @@ var driver = new webdriver.Builder()
   .forBrowser('chrome')
   .build();
 
+var handleError = (e)=>console.log(e);
+
 driver.get('https://cloud.digitalocean.com/login');
 driver.findElement(By.id('user_email')).sendKeys(config.username);
 driver.findElement(By.id('user_password')).sendKeys(config.password);
@@ -22,12 +24,12 @@ driver.wait(until.elementLocated(By.id('otp')), 50000).then(()=>{
         return Promise.resolve(true);
       }
     });
-  }, 50000).catch((e)=>console.log(e));
+  }, 50000).catch(handleError);
   driver.sleep(3000); // two factor authentication
   var twoFactorBtn = driver.findElement(By.name('commit'));
   twoFactorBtn.click();
 
-}).catch((e)=>console.log(e));
+}).catch(handleError);
 
 //无两步验证
 
